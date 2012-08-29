@@ -201,8 +201,8 @@ class CurrentConditionsDisplay implements SplObserver
 	}
 
 	/**
-	* добавил отписку для обсерверов, это важно, нужно всегда отписиваться, иначе
-	* субьект может попытаться отсылать информацию обсерверам которых нету
+	* добавил отписку для обсерверов, это важно, нужно всегда отписиваться
+	* но данный способ бесполезен, на обьект 2 ссылки, в глоб. обл. и в субьекте.
 	*/
 	public function __destruct()
 	{
@@ -233,8 +233,16 @@ class ForecastDisplay implements SplObserver
 
 $weather_data = new ProxyWeatherData(new WeatherData(10, 10, 10));
 $weather_data->attach(new StatisticsDisplay);
-$weather_data->attach(new ForecastDisplay, array('getTemperature', 'getPressure'));
+
+$fd = new ForecastDisplay;
+$weather_data->attach($fd, array('getTemperature', 'getPressure'));
+/**
+* удаление тут обьекта не удалит обьект, а значит событие сработает, очень плохо
+*/
+unset($fd);
+
 $cond_ob = new CurrentConditionsDisplay($weather_data);
 $weather_data->notify();
+unset($cond_ob);
 echo '-----------------' . PHP_EOL;
 $weather_data->setTemperature(20);
